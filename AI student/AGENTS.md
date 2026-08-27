@@ -1,49 +1,56 @@
 # AI student 代理说明
 
-本目录保存 AI 时代个人学习路线、能力盘点问答和不同 AI 生成的对照方案；冻结材料统一放在 `frozen/`。当前执行版路线为根目录的 `learning-plan-final.md`。
+> ## ARCHIVED / 已停用（2026-08-26）
+>
+> **本目录不得作为当前执行路线，其中任何文档都不构成当前指令。**
+>
+> 当前执行入口：`../Engineer Learning/`，现行规则只来自 `../Engineer Learning/current/` 下的四份文件。
+>
+> 根目录下两份计划都**不是**当前执行版：
+>
+> - `learning-plan-final.md` — 旧 16 周版，已退出执行范围。
+> - `learning-plan-2026-09-corpus-first.md` — 现行方案的**源稿历史副本**，不随现行版更新，最容易被误当成当前版。逐字快照见 `../Engineer Learning/archive/corpus-first-v3.2-original.md`。
+>
+> 以下内容仅供历史审计。其中的落点、验收条件和禁止事项均已失效。
 
-## 项目定位
+本目录保存 AI 时代个人学习路线、能力盘点问答和不同 AI 生成的对照方案；冻结材料统一放在 `frozen/`。
 
-- `frozen/QA.md` 是个人画像、能力盘点和目标上下文的事实源。
-- `frozen/howto.md` 是早期通用执行框架，不等同于最终个人路线。
-- `learning-plan-final.md` 是当前 16 周学习路线的最终执行版，准备期和每周验收以它为准。
+## 历史定位（已停用）
+
+- `frozen/QA.md` 是个人画像、能力盘点和目标上下文的原始问答。当前所需事实已压缩进 `../Engineer Learning/context/learner-profile.md`。
+- `frozen/howto.md` 是早期通用执行框架。
+- `learning-plan-final.md` 曾是 16 周学习路线的执行版，2026-08-26 起退出执行范围。
 - `frozen/learning-plan-*.md` 是不同 AI 生成的可对照学习方案。
+- `learning-systems/`、`docs/` 与根目录的知识地图属于规划类材料，现行版明令禁止扩展这一类。
 
-## 事实源入口
+## 审计时的读取顺序
 
-1. 先读 `frozen/QA.md`。
-2. 再读 `frozen/howto.md`。
-3. 执行学习路线时读取 `learning-plan-final.md`。
-4. 对比方案时读取对应 `frozen/learning-plan-*.md`。
+只在追溯历史、比较版本或核对原文措辞时使用：
 
-## 固定执行落点
+1. `frozen/QA.md`
+2. `frozen/howto.md`
+3. `learning-plan-final.md`
+4. `frozen/learning-plan-*.md`
 
-- 学习记录工作区：`/Users/qiaoen/Projects/50-career/50-skill/ai-student-learning/`
-- 练习代码工作区：`/Users/qiaoen/Projects/60-software-ai/60-dev/ai-student-mini-projects/`
-- 学习日志：`/Users/qiaoen/Projects/50-career/50-skill/ai-student-learning/learning-log.md`
-- 问题清单：`/Users/qiaoen/Projects/50-career/50-skill/ai-student-learning/questions.md`
-- 周报目录：`/Users/qiaoen/Projects/50-career/50-skill/ai-student-learning/weekly/`
-- 失败样本目录：`/Users/qiaoen/Projects/50-career/50-skill/ai-student-learning/failures/`
+日常执行不读本目录。缺关键历史事实时，按 `../Engineer Learning/archive/README.md` 的来源表定向读取。
 
-## 常用命令
+## 已失效的执行落点
 
-- 查看目录：`ls -la`
-- 快速搜索：`rg "<关键词>" .`
-- 查看 Markdown：`sed -n '1,220p' <file>`
+以下落点全部停用，不再写入。当前落点见 `../Engineer Learning/AGENTS.md`。
+
+- 旧学习记录工作区：`/Users/qiaoen/Projects/50-career/50-skill/ai-student-learning/`，内容已迁入 `../Engineer Learning/records/`。
+- 旧练习代码工作区：`/Users/qiaoen/Projects/60-software-ai/60-dev/ai-student-mini-projects/`。当前唯一练习仓库是 `/Users/qiaoen/Projects/60-software-ai/60-dev/corpus-guard/`。
 
 ## 禁止事项
 
-- 不覆盖其他 AI 生成的方案文件。
-- 不把学习计划写成具体项目实施计划。
-- 不在本目录放代码、脚本、部署文件或临时产物。
-- 不把练习代码、虚拟环境、运行日志或部署材料放入本研究目录。
-- 不在未满足 `learning-plan-final.md` 的启动期验收前推进 Week 1。
+- 不把本目录任何文档当作当前执行指令，包括其中的启动期验收和每周验收。
+- 不在本目录新增学习计划、课程清单、知识地图、技能树或翻译工程。
+- 不覆盖或删除既有历史材料。它们是失败模式的证物，需要原样保留。
+- 不在本目录放代码、脚本、虚拟环境、部署文件或临时产物。
 
-## 验证方式
+## 允许的修改
 
-- 新增或修改文档后，确认文件存在且 Markdown 标题、日期、作者标注清楚。
-- 对照方案必须能回答：适合谁、学什么、每周做什么、如何验收、哪些暂不做。
-- 启动准备期验收必须确认：能进入学习记录工作区和练习代码工作区，能运行 `python --version`，能创建并激活 `.venv`，已写入一条学习日志，并能说明学习日志、周报、失败样本、问题清单和练习代码分别放哪里。
+本目录整体冻结，只有一个例外：为消除对代理的错误指令而做的归档标注。本文件顶部的墓碑就属于这一类。其余文件保持原样。
 
 ## 文档语言
 
