@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>计算机全局骨架图谱 · 单图版</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --paper: #ffffff;
+      --ink: #152230;
+      --muted: #5c6a78;
+      --line: #d8e0e8;
+      --core: #1f64a8;
+      --core-soft: #e9f3ff;
+      --system: #0b7667;
+      --system-soft: #e8f7f3;
+      --practice: #8a5a12;
+      --practice-soft: #fff4df;
+      --tool: #6b7280;
+      --tool-soft: #f1f3f5;
+      --edge: #9aa5b1;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.45;
+    }
+
+    .page {
+      max-width: 100vw;
+      min-height: 100vh;
+      padding: 18px 22px 28px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: end;
+      margin: 0 0 14px;
+    }
+
+    .kicker {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0 0 5px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 48px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .summary {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      max-width: 900px;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 8px;
+      min-height: 36px;
+      padding: 0 12px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:hover { background: #eef2f6; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--paper);
+      font-size: 13px;
+    }
+
+    .pill.core { background: var(--core-soft); color: var(--core); border-color: #bfd7f1; }
+    .pill.system { background: var(--system-soft); color: var(--system); border-color: #b9ddd5; }
+    .pill.practice { background: var(--practice-soft); color: var(--practice); border-color: #ead3a8; }
+    .pill.tool { background: var(--tool-soft); color: var(--tool); }
+
+    .canvas-frame {
+      height: calc(100vh - 172px);
+      min-height: 720px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--paper);
+      box-shadow: 0 10px 34px rgba(21, 34, 48, 0.07);
+    }
+
+    .canvas-inner {
+      width: max-content;
+      margin: 0 auto;
+      transform-origin: top left;
+      transition: transform 160ms ease;
+    }
+
+    svg {
+      display: block;
+      width: 2060px;
+      height: 1900px;
+    }
+
+    .footer-strip {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .source-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      justify-content: flex-end;
+    }
+
+    a { color: var(--core); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    @media (max-width: 900px) {
+      .page { padding: 14px 12px 24px; }
+      header { grid-template-columns: 1fr; }
+      .controls { justify-content: flex-start; }
+      .canvas-frame { height: 72vh; min-height: 620px; }
+      .footer-strip { grid-template-columns: 1fr; }
+      .source-links { justify-content: flex-start; }
+    }
+
+    @media print {
+      @page { size: 2060px 1900px; margin: 0; }
+
+      html,
+      body {
+        width: 2060px !important;
+        height: 1900px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: #ffffff !important;
+      }
+
+      .page {
+        width: 2060px !important;
+        height: 1900px !important;
+        min-height: 0 !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      header,
+      .legend,
+      .footer-strip {
+        display: none !important;
+      }
+
+      .canvas-frame {
+        width: 2060px !important;
+        height: 1900px !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+      }
+
+      .canvas-inner,
+      svg#graph {
+        width: 2060px !important;
+        height: 1900px !important;
+        margin: 0 !important;
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div>
+        <p class="kicker">单图版 · 父节点、子节点、工程覆盖、工具定位都汇总在同一张图</p>
+        <h1>计算机全局骨架图谱</h1>
+        <p class="summary">从“表达计算”到“单机运行”，再到“数据、网络、多机系统”和“工程落地”。每个大节点内部都包含子骨架，工具只挂靠到相应位置。</p>
+      </div>
+      <div class="controls" aria-label="缩放控制">
+        <button type="button" data-zoom="fit">适配</button>
+        <button type="button" data-zoom="1">100%</button>
+        <button type="button" data-zoom="1.2">120%</button>
+        <button type="button" data-zoom="1.4">140%</button>
+      </div>
+    </header>
+
+    <div class="legend" aria-label="图例">
+      <span class="pill core">蓝色：TYCS 理论主干</span>
+      <span class="pill system">绿色：多机系统连接层</span>
+      <span class="pill practice">黄色：现代工程覆盖层</span>
+      <span class="pill tool">灰色：工具 / 产品 / 框架</span>
+      <span class="pill">二级骨架：主干下的稳定知识类别</span>
+      <span class="pill">箭头：上级前提 -> 下级应用</span>
+    </div>
+
+    <main class="canvas-frame" id="frame">
+      <div class="canvas-inner" id="canvasInner">
+        <svg viewBox="0 0 1960 1560" role="img" aria-labelledby="title desc" id="graph">
+          <title id="title">计算机全局骨架图谱单图版</title>
+          <desc id="desc">一张图展示计算机世界的主干节点、子节点、工程覆盖层和工具定位。</desc>
+          <defs>
+            <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,8 L11,4 z" fill="#7b8794"></path>
+            </marker>
+            <filter id="softShadow" x="-10%" y="-10%" width="120%" height="130%">
+              <feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#152230" flood-opacity="0.10"></feDropShadow>
+            </filter>
+          </defs>
+        </svg>
+      </div>
+    </main>
+
+    <footer class="footer-strip">
+      <div>阅读方式：大框是一级主干或工程覆盖层；框内分组是二级骨架；“工具/实例”只表示落点，不是骨架。算法节点里：图是结构模型，贪心是算法范式，复杂度是分析语言。</div>
+      <div class="source-links">
+        <a href="https://teachyourselfcs.com/">Teach Yourself CS</a>
+        <a href="https://roadmap.sh/computer-science">roadmap.sh CS</a>
+        <a href="https://roadmap.sh/backend">roadmap.sh Backend</a>
+        <a href="https://pages.cs.wisc.edu/~remzi/OSTEP/">OSTEP</a>
+        <a href="https://craftinginterpreters.com/contents.html">Crafting Interpreters</a>
+        <a href="https://dataintensive.net/">DDIA</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.getElementById("graph");
+
+    const palette = {
+      core: { fill: "#e9f3ff", stroke: "#1f64a8", chip: "#ffffff", text: "#152230", sub: "#5c6a78" },
+      system: { fill: "#e8f7f3", stroke: "#0b7667", chip: "#ffffff", text: "#152230", sub: "#5c6a78" },
+      practice: { fill: "#fff4df", stroke: "#8a5a12", chip: "#ffffff", text: "#152230", sub: "#5c6a78" },
+      tool: { fill: "#f1f3f5", stroke: "#7b8794", chip: "#ffffff", text: "#152230", sub: "#5c6a78" }
+    };
+
+    const GRAPH_W = 2060;
+    const GRAPH_H = 1900;
+    svg.setAttribute("viewBox", `0 0 ${GRAPH_W} ${GRAPH_H}`);
+    svg.setAttribute("width", GRAPH_W);
+    svg.setAttribute("height", GRAPH_H);
+
+    const groups = [
+      {
+        id: "root", type: "tool", x: 710, y: 42, w: 600,
+        title: "计算机世界", subtitle: "表达计算 -> 运行程序 -> 存数据 / 通网络 -> 多机系统 -> 工程落地",
+        sections: [],
+        source: "总入口"
+      },
+      {
+        id: "programming", type: "core", x: 90, y: 240, w: 410,
+        title: "编程思想与抽象", subtitle: "把想法组织成可执行、可组合、可解释的程序",
+        sections: [{ label: "二级骨架", items: ["过程抽象", "数据抽象", "状态 / 对象", "流 / 惰性", "解释器", "寄存器机器"] }],
+        source: "SICP / CS61A",
+        tools: ["Python", "Scheme"]
+      },
+      {
+        id: "math", type: "core", x: 560, y: 240, w: 410,
+        title: "计算机数学", subtitle: "为计算结构提供证明、建模和推理语言",
+        sections: [{ label: "二级骨架", items: ["逻辑 / 证明", "集合", "组合", "概率", "图论", "线性代数", "数论"] }],
+        source: "MIT MCS / Lovasz",
+        tools: ["概率模型", "图模型"]
+      },
+      {
+        id: "architecture", type: "core", x: 90, y: 600, w: 410,
+        title: "计算机体系结构", subtitle: "解释程序如何落到真实机器和性能边界上",
+        sections: [{ label: "二级骨架", items: ["数据表示", "指令", "寄存器", "内存层级", "CPU Cache", "链接", "系统调用", "性能边界"] }],
+        source: "CSAPP / Nand2Tetris",
+        tools: ["C", "汇编"]
+      },
+      {
+        id: "os", type: "core", x: 560, y: 600, w: 410,
+        title: "操作系统", subtitle: "把硬件包装成进程、内存、文件和并发抽象",
+        sections: [{ label: "二级骨架", items: ["虚拟化", "调度", "进程 / 线程", "锁 / 并发 bug", "虚拟内存", "文件系统", "I/O", "持久化"] }],
+        source: "OSTEP / xv6",
+        tools: ["Linux", "Shell"]
+      },
+      {
+        id: "languages", type: "core", x: 1030, y: 600, w: 410,
+        title: "编程语言与编译器", subtitle: "解释语言如何表达、约束、翻译和执行程序",
+        sections: [{ label: "二级骨架", items: ["词法 / 语法", "AST", "解释器", "类型 / 作用域", "字节码 / VM", "闭包", "GC", "优化"] }],
+        source: "Crafting Interpreters",
+        tools: ["DSL", "静态分析"]
+      },
+      {
+        id: "algorithms", type: "core", x: 90, y: 970, w: 410,
+        title: "算法与数据结构", subtitle: "把问题变成结构，并估计解决方案成本",
+        sections: [
+          { label: "分析语言", items: ["复杂度", "正确性", "难解问题"] },
+          { label: "结构模型", items: ["数组 / 哈希", "树 / 堆", "图"] },
+          { label: "算法范式", items: ["搜索 / 排序", "贪心", "动态规划"] }
+        ],
+        source: "Skiena / Roughgarden",
+        tools: ["LeetCode", "索引结构"]
+      },
+      {
+        id: "database", type: "core", x: 560, y: 970, w: 410,
+        title: "数据库", subtitle: "让数据能被建模、保存、查询、并发修改和恢复",
+        sections: [{ label: "二级骨架", items: ["数据建模", "SQL", "索引", "查询优化", "事务", "并发控制", "恢复", "复制 / 分片"] }],
+        source: "CS186 / Red Book",
+        tools: ["SQLite", "PostgreSQL"]
+      },
+      {
+        id: "network", type: "core", x: 1030, y: 970, w: 410,
+        title: "计算机网络", subtitle: "让机器通过协议通信，并在不可靠底层上构造可靠服务",
+        sections: [{ label: "二级骨架", items: ["分层", "TCP / UDP", "DNS", "HTTP / TLS", "路由", "拥塞控制", "Socket", "抓包"] }],
+        source: "Top-Down / Wireshark",
+        tools: ["curl", "浏览器"]
+      },
+      {
+        id: "distributed", type: "system", x: 520, y: 1360, w: 620,
+        title: "分布式系统", subtitle: "跨多台机器处理故障、复制、一致性和扩展",
+        sections: [{ label: "二级骨架", items: ["失败模型", "复制", "分区", "一致性", "共识", "队列 / 日志", "批处理 / 流处理"] }],
+        source: "DDIA / MIT 6.824",
+        tools: ["Kafka", "Redis"]
+      },
+      {
+        id: "design", type: "practice", x: 1550, y: 240, w: 420,
+        title: "软件设计与工程实践", subtitle: "让代码长期可理解、可修改、可评审",
+        sections: [{ label: "二级骨架", items: ["模块边界", "接口深度", "测试", "代码评审", "文档", "依赖 / 构建"] }],
+        source: "APOSD / SWE at Google",
+        tools: ["Git", "CI"]
+      },
+      {
+        id: "backend", type: "practice", x: 1550, y: 535, w: 420,
+        title: "Web / API / 后端服务", subtitle: "把网络、数据库和业务逻辑组织成可调用服务",
+        sections: [{ label: "二级骨架", items: ["HTTP 服务", "REST", "GraphQL / gRPC", "OpenAPI", "Auth", "Cache", "Queue", "Rate Limit"] }],
+        source: "MDN / roadmap.sh Backend",
+        tools: ["FastAPI", "Nginx"]
+      },
+      {
+        id: "arch", type: "practice", x: 1550, y: 830, w: 420,
+        title: "架构判断", subtitle: "识别高代价决策，管理边界、依赖和演化",
+        sections: [{ label: "二级骨架", items: ["共享理解", "边界", "耦合", "演化", "迁移", "真实案例"] }],
+        source: "Fowler / AOSA",
+        tools: ["ADR", "C4"]
+      },
+      {
+        id: "delivery", type: "practice", x: 1550, y: 1125, w: 420,
+        title: "交付 / Twelve-Factor", subtitle: "让服务可配置、可发布、可替换、可观察",
+        sections: [{ label: "二级骨架", items: ["Codebase", "Dependencies", "Config", "Backing services", "Build / Release / Run", "Logs"] }],
+        source: "Twelve-Factor",
+        tools: ["Docker", "Kubernetes"]
+      },
+      {
+        id: "sre", type: "practice", x: 1550, y: 1420, w: 420,
+        title: "SRE / 安全 / AI 应用", subtitle: "生产可靠性、系统风险和 AI 专业延伸",
+        sections: [
+          { label: "生产可靠性", items: ["SLO", "Monitoring", "Alerting", "Incident / Postmortem"] },
+          { label: "横向 / 延伸", items: ["OWASP / Auth / TLS", "RAG", "Agent", "Evals"] }
+        ],
+        source: "SRE Books / AI 延伸",
+        tools: ["Prometheus", "LLM API"]
+      }
+    ];
+
+    const edges = [
+      ["root", "programming"], ["root", "math"], ["programming", "architecture"], ["programming", "algorithms"],
+      ["math", "algorithms"], ["architecture", "os"], ["architecture", "languages"], ["os", "database"],
+      ["os", "network"], ["algorithms", "database"], ["database", "distributed"], ["network", "distributed"],
+      ["languages", "backend"], ["network", "backend"], ["database", "backend"], ["distributed", "arch"],
+      ["backend", "delivery"], ["distributed", "sre"], ["backend", "sre"], ["programming", "design"]
+    ];
+
+    function el(name, attrs = {}, parent = svg) {
+      const node = document.createElementNS(NS, name);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+      parent.appendChild(node);
+      return node;
+    }
+
+    function text(lines, x, y, opts = {}, parent = svg) {
+      const t = el("text", {
+        x, y,
+        "text-anchor": opts.anchor || "middle",
+        "font-size": opts.size || 16,
+        "font-weight": opts.weight || 500,
+        fill: opts.fill || "#152230"
+      }, parent);
+      lines.forEach((line, i) => {
+        const span = el("tspan", { x, dy: i === 0 ? 0 : (opts.lineHeight || 20) }, t);
+        span.textContent = line;
+      });
+      return t;
+    }
+
+    function sectionItems(group) {
+      if (group.sections) return group.sections.flatMap(section => section.items);
+      return group.children || [];
+    }
+
+    function chipMetrics(group) {
+      const usable = group.w - 40;
+      const chipW = group.w >= 600 ? 126 : group.w >= 420 ? 118 : 108;
+      const chipH = 30;
+      const gapX = 10;
+      const gapY = 10;
+      const cols = Math.max(2, Math.floor((usable + gapX) / (chipW + gapX)));
+      return { chipW, chipH, gapX, gapY, cols };
+    }
+
+    function measureGroup(group) {
+      const { chipH, gapY, cols } = chipMetrics(group);
+      let rows = 0;
+      (group.sections || [{ label: "二级骨架", items: group.children || [] }]).forEach(section => {
+        rows += 1; // label row
+        rows += Math.ceil(section.items.length / cols);
+      });
+      const chipArea = rows === 0 ? 0 : rows * chipH + Math.max(0, rows - 1) * gapY;
+      const toolArea = group.tools && group.tools.length ? 34 : 0;
+      const h = 112 + chipArea + toolArea + 26;
+      group.h = Math.max(group.minH || 0, h);
+      return group.h;
+    }
+
+    groups.forEach(measureGroup);
+
+    function center(group) {
+      return { x: group.x + group.w / 2, y: group.y + group.h / 2 };
+    }
+
+    function sidePoint(group, side) {
+      const c = center(group);
+      if (side === "right") return { x: group.x + group.w, y: c.y };
+      if (side === "left") return { x: group.x, y: c.y };
+      if (side === "top") return { x: c.x, y: group.y };
+      return { x: c.x, y: group.y + group.h };
+    }
+
+    function edgePath(from, to) {
+      const a = groups.find(g => g.id === from);
+      const b = groups.find(g => g.id === to);
+      let p1, p2;
+      if (a.x + a.w < b.x) {
+        p1 = sidePoint(a, "right"); p2 = sidePoint(b, "left");
+        const mid = (p1.x + p2.x) / 2;
+        return `M${p1.x},${p1.y} L${mid},${p1.y} L${mid},${p2.y} L${p2.x},${p2.y}`;
+      }
+      if (b.x + b.w < a.x) {
+        p1 = sidePoint(a, "left"); p2 = sidePoint(b, "right");
+        const mid = (p1.x + p2.x) / 2;
+        return `M${p1.x},${p1.y} L${mid},${p1.y} L${mid},${p2.y} L${p2.x},${p2.y}`;
+      }
+      p1 = sidePoint(a, "bottom"); p2 = sidePoint(b, "top");
+      const mid = (p1.y + p2.y) / 2;
+      return `M${p1.x},${p1.y} L${p1.x},${mid} L${p2.x},${mid} L${p2.x},${p2.y}`;
+    }
+
+    function drawBackground() {
+      el("rect", { x: 24, y: 20, width: GRAPH_W - 48, height: GRAPH_H - 52, rx: 12, fill: "#ffffff", stroke: "#d8e0e8" });
+      const lanes = [
+        [58, 182, "表达计算"], [58, 540, "单机运行"], [58, 936, "数据 / 通信 / 结构"], [58, 1304, "多机系统"],
+        [1518, 182, "工程覆盖"]
+      ];
+      lanes.forEach(([x, y, label]) => {
+        text([label], x, y, { anchor: "start", size: 15, weight: 800, fill: "#5c6a78" });
+      });
+    }
+
+    function drawEdges() {
+      const layer = el("g", { fill: "none", stroke: "#9aa5b1", "stroke-width": 2, "stroke-linecap": "round", "stroke-linejoin": "round", "marker-end": "url(#arrow)", opacity: 0.88 });
+      edges.forEach(([from, to]) => el("path", { d: edgePath(from, to) }, layer));
+    }
+
+    function drawGroup(group) {
+      const p = palette[group.type];
+      const g = el("g", { filter: group.id === "root" ? "url(#softShadow)" : "" });
+      el("rect", { x: group.x, y: group.y, width: group.w, height: group.h, rx: 12, fill: p.fill, stroke: p.stroke, "stroke-width": 2 }, g);
+      text([group.title], group.x + group.w / 2, group.y + 30, { size: group.id === "root" ? 22 : 19, weight: 900 }, g);
+      text([group.subtitle], group.x + group.w / 2, group.y + 56, { size: 13, weight: 600, fill: "#5c6a78" }, g);
+
+      if (group.source) {
+        el("line", { x1: group.x + 20, y1: group.y + 74, x2: group.x + group.w - 20, y2: group.y + 74, stroke: "#c9d4df", "stroke-width": 1 }, g);
+        text([group.source], group.x + 22, group.y + 96, { anchor: "start", size: 12, weight: 800, fill: p.stroke }, g);
+      }
+
+      const { chipW, chipH, gapX, gapY, cols } = chipMetrics(group);
+      const startX = group.x + 18;
+      let cursorY = group.y + 112;
+      (group.sections || [{ label: "二级骨架", items: group.children || [] }]).forEach(section => {
+        text([section.label], startX, cursorY + 20, { anchor: "start", size: 12, weight: 900, fill: p.stroke }, g);
+        cursorY += chipH + gapY;
+        section.items.forEach((child, i) => {
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const x = startX + col * (chipW + gapX);
+          const y = cursorY + row * (chipH + gapY);
+          el("rect", { x, y, width: chipW, height: chipH, rx: 7, fill: p.chip, stroke: "#cbd6e2" }, g);
+          const size = child.length > 15 ? 10 : child.length > 10 ? 11 : 12;
+          text([child], x + chipW / 2, y + 19, { size, weight: 760, fill: "#263544" }, g);
+        });
+        cursorY += Math.ceil(section.items.length / cols) * (chipH + gapY);
+      });
+
+      if (group.tools && group.tools.length) {
+        const y = group.y + group.h - 24;
+        el("line", { x1: group.x + 20, y1: y - 18, x2: group.x + group.w - 20, y2: y - 18, stroke: "#d2dae3", "stroke-width": 1 }, g);
+        text(["工具/实例：" + group.tools.join(" / ")], group.x + 20, y, { anchor: "start", size: 12, weight: 800, fill: "#6b7280" }, g);
+      }
+    }
+
+    drawBackground();
+    drawEdges();
+    groups.forEach(drawGroup);
+
+    const canvasInner = document.getElementById("canvasInner");
+    const frame = document.getElementById("frame");
+    function fitZoom() {
+      const pad = 28;
+      const zx = (frame.clientWidth - pad) / GRAPH_W;
+      const zy = (frame.clientHeight - pad) / GRAPH_H;
+      return Math.max(0.42, Math.min(1, zx, zy));
+    }
+
+    function setZoom(value) {
+      if (value === "fit") value = fitZoom();
+      canvasInner.style.width = `${GRAPH_W * value}px`;
+      canvasInner.style.height = `${GRAPH_H * value}px`;
+      svg.style.width = `${GRAPH_W * value}px`;
+      svg.style.height = `${GRAPH_H * value}px`;
+    }
+    document.querySelectorAll("[data-zoom]").forEach(button => {
+      button.addEventListener("click", () => {
+        setZoom(button.dataset.zoom === "fit" ? "fit" : Number(button.dataset.zoom));
+        frame.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+      });
+    });
+    setZoom("fit");
+    window.addEventListener("resize", () => setZoom("fit"));
+  </script>
+</body>
+</html>

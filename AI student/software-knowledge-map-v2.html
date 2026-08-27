@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>计算机全局骨架图谱 V2 审计版</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --surface: #ffffff;
+      --surface-soft: #eef3f8;
+      --ink: #17202a;
+      --muted: #667085;
+      --line: #d7dde6;
+      --blue: #2364aa;
+      --green: #16806a;
+      --amber: #a76712;
+      --red: #b42318;
+      --radius: 8px;
+      --shadow: 0 14px 40px rgba(23, 32, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.65;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 20px 56px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 30px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      margin: 0 0 12px;
+    }
+
+    h1 {
+      font-size: clamp(30px, 5vw, 52px);
+      line-height: 1.08;
+      margin: 0 0 16px;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: 26px;
+      line-height: 1.25;
+      margin: 42px 0 14px;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      font-size: 18px;
+      line-height: 1.35;
+      margin: 26px 0 10px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 760px;
+    }
+
+    .meta-panel {
+      background: #17202a;
+      color: #f7f8fa;
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 260px;
+    }
+
+    .meta-panel h2 {
+      margin-top: 0;
+      color: #ffffff;
+      font-size: 20px;
+    }
+
+    .meta-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .meta-list li {
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
+      padding-top: 10px;
+      color: #d8e0ea;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(247, 248, 250, 0.94);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      margin: 0 0 24px;
+      padding: 10px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    nav a {
+      display: inline-block;
+      padding: 8px 10px;
+      border-radius: 6px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    nav a:hover {
+      background: var(--surface-soft);
+      text-decoration: none;
+    }
+
+    section {
+      margin: 0 0 30px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: 0 8px 24px rgba(23, 32, 42, 0.05);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tile {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      min-height: 150px;
+    }
+
+    .tile h3 {
+      margin-top: 0;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #f9fafb;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    .badge.core {
+      color: var(--blue);
+      border-color: rgba(35, 100, 170, 0.25);
+      background: rgba(35, 100, 170, 0.08);
+    }
+
+    .badge.cover {
+      color: var(--green);
+      border-color: rgba(22, 128, 106, 0.25);
+      background: rgba(22, 128, 106, 0.08);
+    }
+
+    .badge.risk {
+      color: var(--amber);
+      border-color: rgba(167, 103, 18, 0.25);
+      background: rgba(167, 103, 18, 0.1);
+    }
+
+    .notice {
+      border-left: 4px solid var(--amber);
+      background: #fff8eb;
+      padding: 16px 18px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin: 16px 0;
+    }
+
+    .notice.critical {
+      border-color: var(--red);
+      background: #fff1f0;
+    }
+
+    .map-wrap {
+      overflow-x: auto;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+    }
+
+    svg {
+      display: block;
+      min-width: 980px;
+      width: 100%;
+      height: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: table;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 11px 12px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: var(--surface-soft);
+      color: #344054;
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin: 10px 0;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    summary::marker {
+      color: var(--blue);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .side-label {
+      color: var(--muted);
+      font-size: 14px;
+      position: sticky;
+      top: 76px;
+    }
+
+    .source-list {
+      columns: 2;
+      column-gap: 28px;
+      padding-left: 18px;
+    }
+
+    .source-list li {
+      break-inside: avoid;
+      margin-bottom: 6px;
+    }
+
+    footer {
+      color: var(--muted);
+      margin-top: 34px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      header,
+      .split,
+      .grid,
+      .grid.two {
+        grid-template-columns: 1fr;
+      }
+
+      .side-label {
+        position: static;
+      }
+
+      .source-list {
+        columns: 1;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .page {
+        padding: 18px 12px 40px;
+      }
+
+      .hero,
+      .meta-panel,
+      .panel,
+      .tile {
+        padding: 16px;
+      }
+
+      th,
+      td {
+        font-size: 13px;
+        padding: 9px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="hero">
+        <p class="eyebrow">V2 审计版 · 计算机全局骨架图谱</p>
+        <h1>从“资源清单”调整为“有证据等级的骨架图谱”</h1>
+        <p class="lead">这版不是简单美化上一份 Markdown，而是先审计上一版哪里没有想透，再按原书目录、公开文本、roadmap.sh 和工程资源重新整理。结论会明确区分：已核查、合理推断、仍需人工决策。</p>
+      </div>
+      <aside class="meta-panel">
+        <div>
+          <h2>文档信息</h2>
+          <ul class="meta-list">
+            <li>日期：2026-07-09</li>
+            <li>作者：Codex</li>
+            <li>来源位置：AI student 研究目录</li>
+            <li>状态：修正版 HTML，仍非最终固化图谱</li>
+          </ul>
+        </div>
+      </aside>
+    </header>
+
+    <nav aria-label="页面导航">
+      <a href="#audit">审计结论</a>
+      <a href="#evidence">证据等级</a>
+      <a href="#map">修正总图</a>
+      <a href="#core">TYCS 主干</a>
+      <a href="#coverage">工程覆盖层</a>
+      <a href="#disputes">争议台账</a>
+      <a href="#terms">技术词定位</a>
+      <a href="#sources">来源</a>
+    </nav>
+
+    <main>
+      <section id="audit">
+        <h2>1. 对上一版的反思</h2>
+        <div class="notice critical">
+          <strong>核心审计结论：</strong>上一版没有认真逐章分析所有原版书籍内容。它完成了“资源定位”和“粗粒度骨架”，但没有把每本原书的目录结构、思想主线和证据强度写清楚。因此它不能被当成“已深读全部原书后的最终图谱”。
+        </div>
+
+        <div class="grid">
+          <article class="tile">
+            <h3>遗漏 1：证据等级缺失</h3>
+            <p>上一版把 TYCS、roadmap.sh、细分资源混在同一叙述层，没有标明哪些来自原书公开目录，哪些只是官方介绍或二手定位。</p>
+            <div class="badge-row"><span class="badge risk">已修正</span><span class="badge">新增证据等级</span></div>
+          </article>
+
+          <article class="tile">
+            <h3>遗漏 2：原书内容太粗</h3>
+            <p>SICP、OSTEP、Crafting Interpreters、SRE、Twelve-Factor 等书或材料有清晰结构，上一版只提了概念，没有把结构映射进骨架。</p>
+            <div class="badge-row"><span class="badge risk">已修正</span><span class="badge">新增书本结构摘要</span></div>
+          </article>
+
+          <article class="tile">
+            <h3>遗漏 3：工程层被写薄</h3>
+            <p>Software Engineering at Google 的核心不是“代码评审”几个词，而是时间、变化、规模、成本。Twelve-Factor 也不是部署口号，而是一套服务运行纪律。</p>
+            <div class="badge-row"><span class="badge risk">已修正</span><span class="badge">覆盖层细化</span></div>
+          </article>
+
+          <article class="tile">
+            <h3>遗漏 4：AI 应用边界不够硬</h3>
+            <p>上一版说 AI 应用是专业延伸，但没有解释为什么。更准确地说，RAG / Agent 不是传统 CS 主干，却依赖数据、网络、后端、可靠性和评估体系。</p>
+            <div class="badge-row"><span class="badge risk">已修正</span><span class="badge">仍需独立资源验证</span></div>
+          </article>
+
+          <article class="tile">
+            <h3>遗漏 5：安全的地位仍不稳</h3>
+            <p>Security 在 TYCS 里不是一级主干，但在 roadmap.sh Backend 里很突出。它既不是普通工具，也不是单一学科入口，应暂放横向层并等待你决策。</p>
+            <div class="badge-row"><span class="badge risk">保留争议</span><span class="badge">不隐式裁决</span></div>
+          </article>
+
+          <article class="tile">
+            <h3>遗漏 6：DDIA 版本判断不严谨</h3>
+            <p>上一版已修正为不指定 2e。HTML 版继续保留这个谨慎处理：没有官方来源确认前，不把版本升级写成事实。</p>
+            <div class="badge-row"><span class="badge risk">保留待核查</span><span class="badge">不伪装确认</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="evidence">
+        <h2>2. 证据等级</h2>
+        <div class="panel">
+          <table>
+            <thead>
+              <tr>
+                <th>等级</th>
+                <th>含义</th>
+                <th>可以如何使用</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>A</strong></td>
+                <td>核查到公开目录、开放文本或官方章节结构。</td>
+                <td>可以作为骨架判断的强证据，但仍不等于逐字读完全书。</td>
+              </tr>
+              <tr>
+                <td><strong>B</strong></td>
+                <td>核查到官方介绍、课程页面、书籍主页或稳定目录线索。</td>
+                <td>可以支持资源归位，但不应过度提炼细节。</td>
+              </tr>
+              <tr>
+                <td><strong>C</strong></td>
+                <td>主要来自 TYCS 推荐、roadmap.sh 对照或常识性学科定位。</td>
+                <td>只能作为候选位置，必须进入争议或待验证。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="notice">
+          本次修正仍然不是“读完全部原版书籍”的结果。它是“基于可公开核查结构的骨架审计版”。如果要达到严格意义上的原书研究，需要逐本做目录、前言、章节摘要、核心概念、反例和适用边界的阅读卡片。
+        </div>
+      </section>
+
+      <section id="map">
+        <h2>3. 修正后的全局骨架</h2>
+        <div class="map-wrap" aria-label="计算机全局骨架 SVG 图">
+          <svg viewBox="0 0 1120 560" role="img" aria-labelledby="map-title map-desc">
+            <title id="map-title">计算机全局骨架图</title>
+            <desc id="map-desc">蓝色为 TYCS 主干，绿色为现代工程覆盖层，橙色为专业延伸或横向议题。</desc>
+            <defs>
+              <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#607080"></path>
+              </marker>
+            </defs>
+            <rect x="20" y="24" width="1080" height="512" rx="8" fill="#ffffff" stroke="#d7dde6"></rect>
+
+            <g fill="#e8f1ff" stroke="#2364aa" stroke-width="1.4">
+              <rect x="70" y="70" width="180" height="56" rx="8"></rect>
+              <rect x="310" y="70" width="180" height="56" rx="8"></rect>
+              <rect x="550" y="70" width="180" height="56" rx="8"></rect>
+              <rect x="790" y="70" width="180" height="56" rx="8"></rect>
+              <rect x="70" y="200" width="180" height="56" rx="8"></rect>
+              <rect x="310" y="200" width="180" height="56" rx="8"></rect>
+              <rect x="550" y="200" width="180" height="56" rx="8"></rect>
+              <rect x="790" y="200" width="180" height="56" rx="8"></rect>
+              <rect x="430" y="326" width="210" height="56" rx="8"></rect>
+            </g>
+
+            <g fill="#eefaf6" stroke="#16806a" stroke-width="1.4">
+              <rect x="80" y="444" width="180" height="56" rx="8"></rect>
+              <rect x="300" y="444" width="180" height="56" rx="8"></rect>
+              <rect x="520" y="444" width="180" height="56" rx="8"></rect>
+              <rect x="740" y="444" width="180" height="56" rx="8"></rect>
+            </g>
+
+            <g fill="#fff6e8" stroke="#a76712" stroke-width="1.4">
+              <rect x="920" y="326" width="140" height="56" rx="8"></rect>
+            </g>
+
+            <g font-size="14" font-weight="700" fill="#17202a" text-anchor="middle">
+              <text x="160" y="94">Programming</text>
+              <text x="160" y="114">抽象与表达</text>
+              <text x="400" y="94">Architecture</text>
+              <text x="400" y="114">机器与性能</text>
+              <text x="640" y="94">Algorithms</text>
+              <text x="640" y="114">结构与复杂度</text>
+              <text x="880" y="94">Math for CS</text>
+              <text x="880" y="114">证明与模型</text>
+              <text x="160" y="224">Operating Systems</text>
+              <text x="160" y="244">资源管理</text>
+              <text x="400" y="224">Networking</text>
+              <text x="400" y="244">协议与通信</text>
+              <text x="640" y="224">Databases</text>
+              <text x="640" y="244">数据与事务</text>
+              <text x="880" y="224">Languages</text>
+              <text x="880" y="244">解释与编译</text>
+              <text x="535" y="350">Distributed Systems</text>
+              <text x="535" y="370">故障与一致性</text>
+              <text x="170" y="468">Software Design</text>
+              <text x="170" y="488">复杂度控制</text>
+              <text x="390" y="468">Web / Backend</text>
+              <text x="390" y="488">API 与服务</text>
+              <text x="610" y="468">Production / SRE</text>
+              <text x="610" y="488">可靠性</text>
+              <text x="830" y="468">Architecture</text>
+              <text x="830" y="488">高代价决策</text>
+              <text x="990" y="350">AI / Security</text>
+              <text x="990" y="370">延伸与横切</text>
+            </g>
+
+            <g stroke="#607080" stroke-width="1.4" fill="none" marker-end="url(#arrow)">
+              <path d="M250 98 H310"></path>
+              <path d="M250 112 C360 165 500 170 550 112"></path>
+              <path d="M730 98 H790"></path>
+              <path d="M400 126 V200"></path>
+              <path d="M160 126 V200"></path>
+              <path d="M250 228 H310"></path>
+              <path d="M490 228 H550"></path>
+              <path d="M730 228 H790"></path>
+              <path d="M640 256 C630 296 595 315 565 326"></path>
+              <path d="M400 256 C420 292 460 310 500 326"></path>
+              <path d="M535 382 V444"></path>
+              <path d="M535 382 C470 410 410 415 390 444"></path>
+              <path d="M535 382 C640 400 755 410 830 444"></path>
+              <path d="M640 382 C800 382 860 360 920 354"></path>
+            </g>
+          </svg>
+        </div>
+      </section>
+
+      <section id="core">
+        <h2>4. TYCS 主干，按原书结构修正</h2>
+        <div class="split">
+          <aside class="side-label">
+            <p>这一节只保留主干骨架，不展开学习任务。每个节点增加“原书结构线索”和“上一版修正点”。</p>
+          </aside>
+          <div>
+            <details open>
+              <summary>1. 编程思想与抽象：SICP / CS61A</summary>
+              <p><strong>证据等级：</strong>A。SICP 公开目录可核查到过程抽象、数据抽象、模块化/对象/状态、元语言抽象、寄存器机器。</p>
+              <p><strong>修正：</strong>上一版只写“抽象、递归、解释器”，太薄。更准确的骨架是：过程抽象 -> 数据抽象 -> 状态与对象 -> 语言解释器 -> 机器模型。</p>
+              <div class="badge-row"><span class="badge core">过程</span><span class="badge core">数据</span><span class="badge core">状态</span><span class="badge core">解释器</span><span class="badge core">寄存器机器</span></div>
+            </details>
+
+            <details open>
+              <summary>2. 计算机体系结构：CSAPP / Nand2Tetris</summary>
+              <p><strong>证据等级：</strong>B。CSAPP 官方页确认其定位是程序员视角的计算机系统；Nand2Tetris 项目页确认其以 12 个项目从硬件到软件栈。</p>
+              <p><strong>修正：</strong>上一版没有明确两者差别。CSAPP 是“真实机器如何运行程序”，Nand2Tetris 是“从 NAND 到可运行系统的纵切直觉”。二者不是同一个入口。</p>
+              <div class="badge-row"><span class="badge core">数据表示</span><span class="badge core">内存层级</span><span class="badge core">链接</span><span class="badge core">系统调用</span><span class="badge core">性能边界</span></div>
+            </details>
+
+            <details open>
+              <summary>3. 算法与数据结构：Skiena / Roughgarden / How to Solve It</summary>
+              <p><strong>证据等级：</strong>B。TYCS 明确偏向 Skiena，roadmap.sh 也强验证数据结构、渐进复杂度、搜索、排序、图、字符串、复杂度类。</p>
+              <p><strong>修正：</strong>上一版正确反对刷题化，但缺少“算法目录的用途”。算法节点应服务于问题建模、成本估计、可行性判断，而不是把题型清单当知识地图。</p>
+              <div class="badge-row"><span class="badge core">复杂度</span><span class="badge core">图</span><span class="badge core">搜索</span><span class="badge core">动态规划</span><span class="badge core">难解问题</span></div>
+            </details>
+
+            <details>
+              <summary>4. 计算机数学：离散数学 / 线性代数</summary>
+              <p><strong>证据等级：</strong>B。TYCS 将离散数学、逻辑、组合、概率、集合、图论、数论和线性代数列为 CS 数学底座。</p>
+              <p><strong>修正：</strong>上一版把数学写成“理论主干”，但没有说明它不是单独为了考试，而是为算法正确性、复杂度、密码、ML、图结构提供表达语言。</p>
+              <div class="badge-row"><span class="badge core">证明</span><span class="badge core">组合</span><span class="badge core">概率</span><span class="badge core">图论</span><span class="badge core">线性空间</span></div>
+            </details>
+
+            <details>
+              <summary>5. 操作系统：OSTEP</summary>
+              <p><strong>证据等级：</strong>A。OSTEP 公开页面明确分为 Virtualization、Concurrency、Persistence，并包含 CPU scheduling、memory API、threads、concurrency bugs、files、file systems、RAID、NFS 等章节。</p>
+              <p><strong>修正：</strong>上一版写“进程、线程、内存、文件”还不够。OS 主干应按三件事组织：虚拟化资源、处理并发、保证持久化。</p>
+              <div class="badge-row"><span class="badge core">Virtualization</span><span class="badge core">Concurrency</span><span class="badge core">Persistence</span><span class="badge core">I/O</span><span class="badge core">Kernel boundary</span></div>
+            </details>
+
+            <details>
+              <summary>6. 计算机网络：Top-Down / Wireshark</summary>
+              <p><strong>证据等级：</strong>B。TYCS 推荐 Kurose/Ross，强调 top-down 和 Wireshark labs。</p>
+              <p><strong>修正：</strong>上一版把网络和 Web API 接得太快。网络主干应先是分层、端到端、可靠传输、拥塞、路由、DNS、HTTP/TLS，再落到 Web 后端。</p>
+              <div class="badge-row"><span class="badge core">分层</span><span class="badge core">端到端</span><span class="badge core">TCP/UDP</span><span class="badge core">DNS</span><span class="badge core">HTTP/TLS</span></div>
+            </details>
+
+            <details>
+              <summary>7. 数据库：CS186 / Architecture of a Database System / Red Book</summary>
+              <p><strong>证据等级：</strong>B。TYCS 明确推荐 CS186、DBMS 架构论文、Red Book，并特别指出 data modeling 常被忽视。</p>
+              <p><strong>修正：</strong>上一版把数据库写成“存取、索引、事务”还不够。更高视野是：查询处理、存储管理、索引、并发控制、恢复、优化器、数据建模共同构成 DBMS。</p>
+              <div class="badge-row"><span class="badge core">存储</span><span class="badge core">查询优化</span><span class="badge core">事务</span><span class="badge core">恢复</span><span class="badge core">数据建模</span></div>
+            </details>
+
+            <details>
+              <summary>8. 编程语言与编译器：Crafting Interpreters / Dragon Book</summary>
+              <p><strong>证据等级：</strong>A。Crafting Interpreters 公开目录显示三段结构：语言地图、树遍历解释器、字节码虚拟机，并覆盖 scanning、parsing、functions、classes、closures、garbage collection、optimization。</p>
+              <p><strong>修正：</strong>上一版说“语言如何表达、约束、翻译和执行”是对的，但应更明确：语言工具链从词法/语法，到 AST / 解释执行，再到字节码、VM、闭包、GC 和优化。</p>
+              <div class="badge-row"><span class="badge core">Parsing</span><span class="badge core">AST</span><span class="badge core">VM</span><span class="badge core">Closures</span><span class="badge core">GC</span></div>
+            </details>
+
+            <details>
+              <summary>9. 分布式系统：DDIA / MIT 6.824</summary>
+              <p><strong>证据等级：</strong>B。TYCS 推荐 DDIA、Distributed Systems 3e、MIT 6.824 和论文阅读；DDIA 官方页确认其聚焦数据密集型应用、可扩展性、CAP、最终一致性、分片等主题。</p>
+              <p><strong>修正：</strong>上一版把分布式系统和后端规模化贴近了，但还要强调它的本体是失败模型、复制、分区、一致性、事务、共识、批处理和流处理。</p>
+              <div class="badge-row"><span class="badge core">复制</span><span class="badge core">分区</span><span class="badge core">一致性</span><span class="badge core">共识</span><span class="badge core">流处理</span></div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section id="coverage">
+        <h2>5. 现代工程覆盖层，重新细化</h2>
+        <div class="grid two">
+          <article class="tile">
+            <h3>软件设计与工程实践</h3>
+            <p><strong>资源：</strong>A Philosophy of Software Design、Software Engineering at Google、Google Engineering Practices。</p>
+            <p><strong>修正：</strong>不只是一组最佳实践。它解决的是代码在时间、变化、规模和成本下还能不能保持可理解、可修改、可评审。</p>
+            <div class="badge-row"><span class="badge cover">复杂度</span><span class="badge cover">模块边界</span><span class="badge cover">测试</span><span class="badge cover">评审</span></div>
+          </article>
+
+          <article class="tile">
+            <h3>Web / API / 后端服务</h3>
+            <p><strong>资源：</strong>MDN HTTP、roadmap.sh Backend、REST、GraphQL、gRPC、OpenAPI。</p>
+            <p><strong>修正：</strong>它不是 CS 主干，但它是网络、数据库、分布式系统在产品服务里的主要汇合点。</p>
+            <div class="badge-row"><span class="badge cover">HTTP</span><span class="badge cover">API contract</span><span class="badge cover">Auth</span><span class="badge cover">Caching</span></div>
+          </article>
+
+          <article class="tile">
+            <h3>架构判断</h3>
+            <p><strong>资源：</strong>Martin Fowler Architecture Guide、AOSA。</p>
+            <p><strong>修正：</strong>架构不是画大图。更准确地说，它关注共享理解、早期希望做对的决策、高代价变更，以及系统演化能力。</p>
+            <div class="badge-row"><span class="badge cover">决策</span><span class="badge cover">演化</span><span class="badge cover">边界</span><span class="badge cover">案例</span></div>
+          </article>
+
+          <article class="tile">
+            <h3>云原生服务纪律</h3>
+            <p><strong>资源：</strong>Twelve-Factor App。</p>
+            <p><strong>修正：</strong>应拆成 codebase、dependencies、config、backing services、build/release/run、processes、logs 等纪律，而不是只写“部署原则”。</p>
+            <div class="badge-row"><span class="badge cover">Config</span><span class="badge cover">Logs</span><span class="badge cover">Processes</span><span class="badge cover">Parity</span></div>
+          </article>
+
+          <article class="tile">
+            <h3>可靠性与生产系统</h3>
+            <p><strong>资源：</strong>Google SRE Books。</p>
+            <p><strong>修正：</strong>SRE 层不是运维杂项。它提供监控、自动化、发布工程、告警、应急响应、事故管理、复盘、可靠性测试和关键状态管理。</p>
+            <div class="badge-row"><span class="badge cover">SLO</span><span class="badge cover">Monitoring</span><span class="badge cover">Alerting</span><span class="badge cover">Postmortem</span></div>
+          </article>
+
+          <article class="tile">
+            <h3>AI 应用与安全</h3>
+            <p><strong>资源：</strong>本轮没有做完整 AI / Security 原书级验证。</p>
+            <p><strong>修正：</strong>RAG、Agent、Evals 先作为专业延伸；Security 先作为横向关注点。二者都重要，但不能在本图谱中偷换成 TYCS 一级主干。</p>
+            <div class="badge-row"><span class="badge risk">待专项验证</span><span class="badge">RAG</span><span class="badge">Agent</span><span class="badge">OWASP</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="disputes">
+        <h2>6. 争议台账，保留人工裁决</h2>
+        <div class="panel">
+          <table>
+            <thead>
+              <tr>
+                <th>争议</th>
+                <th>可选结论</th>
+                <th>本版推荐</th>
+                <th>置信度</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>SICP 是否唯一主入口</td>
+                <td>SICP 唯一入口；或 SICP + Composing Programs / HtDP 替代入口。</td>
+                <td>保留 SICP 为心智模型主入口，同时标注替代入口。</td>
+                <td>中</td>
+              </tr>
+              <tr>
+                <td>CSAPP 还是 Nand2Tetris</td>
+                <td>CSAPP 主；Nand2Tetris 主。</td>
+                <td>CSAPP 主，Nand2Tetris 作纵切补充。</td>
+                <td>高</td>
+              </tr>
+              <tr>
+                <td>算法主资源</td>
+                <td>Skiena / Roughgarden；或 CLRS。</td>
+                <td>Skiena / Roughgarden 主，CLRS 作为参考。</td>
+                <td>中高</td>
+              </tr>
+              <tr>
+                <td>AI/ML 是否一级主干</td>
+                <td>升一级；或专业延伸。</td>
+                <td>暂作专业延伸，另开 AI 骨架验证。</td>
+                <td>中</td>
+              </tr>
+              <tr>
+                <td>Software Engineering / Architecture 是否一级主干</td>
+                <td>升一级；或工程覆盖层。</td>
+                <td>采用双层结构：CS 主干 + 工程覆盖层。</td>
+                <td>中高</td>
+              </tr>
+              <tr>
+                <td>Security 是否一级主干</td>
+                <td>升一级；或横向关注点。</td>
+                <td>暂作横向关注点。</td>
+                <td>中</td>
+              </tr>
+              <tr>
+                <td>工具是否能升为骨架</td>
+                <td>严格挂靠；或部分工具升主干。</td>
+                <td>Docker、Kubernetes、Kafka、Redis 等只挂靠到底层概念。</td>
+                <td>高</td>
+              </tr>
+              <tr>
+                <td>DDIA 是否指定 2e</td>
+                <td>指定 2e；或不指定版本。</td>
+                <td>暂不指定版本，待官方出版页核查。</td>
+                <td>中</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="terms">
+        <h2>7. 技术词定位，作为验收样例</h2>
+        <div class="panel">
+          <table>
+            <thead>
+              <tr>
+                <th>技术词</th>
+                <th>定位</th>
+                <th>不应误判为</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Python</td>
+                <td>语言实例，挂在 Programming 与 Languages 下。</td>
+                <td>计算机科学主干本身。</td>
+              </tr>
+              <tr>
+                <td>FastAPI</td>
+                <td>后端框架，挂在 Web / API / Backend 服务层。</td>
+                <td>架构能力或网络理论。</td>
+              </tr>
+              <tr>
+                <td>SQLite</td>
+                <td>数据库产品，用于理解 SQL、索引、事务、持久化。</td>
+                <td>数据库学科全部。</td>
+              </tr>
+              <tr>
+                <td>HTTP</td>
+                <td>网络应用层协议，同时是 Web / API 基础。</td>
+                <td>单纯后端框架知识。</td>
+              </tr>
+              <tr>
+                <td>Docker</td>
+                <td>交付与环境封装工具，挂在云原生服务纪律。</td>
+                <td>计算机主干。</td>
+              </tr>
+              <tr>
+                <td>RAG</td>
+                <td>AI 应用模式，依赖文档处理、Embedding、检索、数据库、LLM API。</td>
+                <td>数据库或算法的替代品。</td>
+              </tr>
+              <tr>
+                <td>Agent</td>
+                <td>AI 应用模式，依赖任务分解、工具调用、状态、评估、可靠性。</td>
+                <td>自动等同于架构能力。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sources">
+        <h2>8. 核查来源</h2>
+        <div class="panel">
+          <ul class="source-list">
+            <li><a href="https://teachyourselfcs.com/">Teach Yourself CS</a></li>
+            <li><a href="https://roadmap.sh/computer-science">roadmap.sh Computer Science</a></li>
+            <li><a href="https://roadmap.sh/backend">roadmap.sh Backend</a></li>
+            <li><a href="https://sarabander.github.io/sicp/html/index.xhtml">SICP HTML 目录</a></li>
+            <li><a href="https://csapp.cs.cmu.edu/">CSAPP 官方页</a></li>
+            <li><a href="https://www.nand2tetris.org/course">Nand2Tetris Projects</a></li>
+            <li><a href="https://pages.cs.wisc.edu/~remzi/OSTEP/">OSTEP</a></li>
+            <li><a href="https://craftinginterpreters.com/contents.html">Crafting Interpreters 目录</a></li>
+            <li><a href="https://dataintensive.net/">DDIA 官方页</a></li>
+            <li><a href="https://abseil.io/resources/swe-book/html/toc.html">Software Engineering at Google 目录</a></li>
+            <li><a href="https://google.github.io/eng-practices/review/">Google Engineering Practices</a></li>
+            <li><a href="https://12factor.net/">The Twelve-Factor App</a></li>
+            <li><a href="https://sre.google/sre-book/table-of-contents/">Google SRE Book 目录</a></li>
+            <li><a href="https://martinfowler.com/architecture/">Martin Fowler Architecture Guide</a></li>
+            <li><a href="https://aosabook.org/en/">AOSA</a></li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>结论：上一版适合作为初稿，但不应被视为已深读全部原书后的最终图谱。本 HTML 版完成了证据等级、原书结构线索和工程覆盖层修正，仍保留需要人工裁决的争议。</p>
+    </footer>
+  </div>
+</body>
+</html>
