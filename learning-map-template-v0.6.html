@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>学习地图</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #f6f6f3; --panel: #ffffff; --ink: #1f2328; --muted: #5f6670; --line: #d9dce1;
+  --accent: #2458d6; --accent-soft: #e8eefc; --ok: #17803d; --bad: #b42323;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121417; --panel: #1b1e23; --ink: #e6e8eb; --muted: #9aa3ad; --line: #2e333b;
+    --accent: #85a8ff; --accent-soft: #1d2940; --ok: #5ad17f; --bad: #f47a7a;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.6 -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 24px; margin: 0; }
+h2 { font-size: 15px; margin: 0 0 6px; }
+.small { color: var(--muted); font-size: 13px; }
+.use { margin: 4px 0 0; color: var(--muted); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 14px 0; }
+.problems { border-color: var(--bad); color: var(--bad); font-size: 14px; }
+.overview ul { margin: 0; padding-left: 18px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; margin: 16px 0 6px; }
+.progress { flex: 1; min-width: 12em; font-size: 14px; }
+.bar { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; margin-top: 4px; }
+.bar > div { height: 100%; width: 0; background: var(--ok); transition: width .2s; }
+button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+button:hover { border-color: var(--accent); }
+details > summary { cursor: pointer; list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+.tools { position: relative; margin-left: auto; }
+.tools > summary { font-size: 13px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); }
+.tools .menu { position: absolute; z-index: 5; top: calc(100% + 4px); right: 0; display: grid; gap: 6px; padding: 8px; min-width: 11em; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.chapter { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 10px; margin: 10px 0; }
+.chapter.doing { border-left-color: var(--accent); }
+.chapter.done { border-left-color: var(--ok); }
+.chapter > summary { display: flex; gap: 10px; align-items: baseline; padding: 12px 16px; }
+.chapter > summary::before { content: ""; flex: none; align-self: center; width: 7px; height: 7px; margin: 0 2px 0 0; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); transition: transform .15s; }
+.chapter[open] > summary::before { transform: rotate(45deg); }
+.cnum { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.ctitle { flex: 1; font-weight: 600; }
+.cprog { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.chapter.done .cprog { color: var(--ok); }
+.cbody { padding: 0 16px 14px; }
+.goal { margin: 0 0 8px; }
+.goal .small { margin-right: 6px; }
+.points { list-style: none; margin: 0; padding: 0; }
+.points li { border-top: 1px solid var(--line); }
+.points label { display: flex; gap: 10px; align-items: flex-start; padding: 7px 2px; cursor: pointer; }
+.points input { margin-top: 5px; flex: none; }
+.pnum { color: var(--muted); font-size: 13px; min-width: 2.4em; padding-top: 1px; }
+.points input:checked ~ .pq { color: var(--muted); }
+.practice { margin: 10px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--accent-soft); }
+.practice b { margin-right: 6px; }
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); max-width: calc(100% - 32px); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.toast.show { opacity: 1; }
+footer { margin-top: 28px; }
+@media (max-width: 640px) {
+  .chapter > summary { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar > div, .toast, .chapter > summary::before { transition: none; }
+}
+@media print {
+  .tools, #importFile, .toast { display: none; }
+  body { background: #fff; }
+  .chapter { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 id="title"></h1>
+    <p class="use" id="use"></p>
+  </header>
+
+  <div class="panel problems" id="problems" hidden></div>
+
+  <section class="panel overview" id="overviewBox" aria-labelledby="overviewTitle">
+    <h2 id="overviewTitle">全局</h2>
+    <ul id="overview"></ul>
+  </section>
+
+  <div class="toolbar">
+    <div class="progress"><span id="progressText" aria-live="polite"></span><div class="bar"><div id="bar"></div></div></div>
+    <details class="tools" id="tools">
+      <summary>工具 <span aria-hidden="true">▾</span></summary>
+      <div class="menu">
+        <button type="button" onclick="exportFilledHtml()">导出填写版 HTML</button>
+        <button type="button" onclick="exportJson()">导出进度（JSON）</button>
+        <button type="button" onclick="document.getElementById('importFile').click()">导入进度</button>
+        <button type="button" onclick="toggleAll(true)">全部展开</button>
+        <button type="button" onclick="toggleAll(false)">全部收起</button>
+        <button type="button" onclick="window.print()">打印 / PDF</button>
+        <button type="button" onclick="resetState()">重置</button>
+      </div>
+    </details>
+    <input type="file" id="importFile" accept="application/json,.json" hidden onchange="importJson(event)">
+  </div>
+
+  <div id="chapters"></div>
+
+  <footer class="small">
+    学过的知识点勾上。进度只存在当前浏览器，换设备或清缓存前用「工具」导出。不要在这里填 Token、密码、私钥。<span id="mapMeta"></span>
+  </footer>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* MAP-BEGIN：新主题时整体替换这个对象，并改掉 id（它决定进度存在哪）。格式见 learning-method-v0.6.md 第 4 节。 */
+const MAP = {
+  id: "example-github-merge-gate-v0.6",
+  title: "示例：GitHub 合并门禁",
+  version: "0.6",
+  date: "2026-09-30",
+  use: "给自己的一个仓库配好合并门禁，下一个 PR 就走这套",
+  overview: [
+    "改动流转：分支 → PR → 检查与审批 → 合并",
+    "规则约束：分支规则规定合并前必须满足什么、对谁生效、谁能绕过",
+    "检查证据：检查跑过、而且是必需的，结果才会挡住合并",
+    "核对：每改一条规则，用一次实际的推送或 PR 看它是否生效"
+  ],
+  chapters: [
+    { id: "C1", title: "改动怎样进入主分支", goal: "讲清一个改动从分支到 main 要经过哪几关", points: [
+      { id: "P1", q: "为什么改动先放在分支上，再通过 PR 合进 main？" },
+      { id: "P2", q: "PR 页面上的检查、审查和合并按钮各说明什么？" },
+      { id: "P3", q: "合并按钮灰着时，怎样看出还缺哪一项？" }
+    ], practice: {
+      do: "在试验仓库开一个分支，提交一处小改动，开一个 PR，对着 PR 页面认出检查、审查和合并按钮。",
+      done: "PR 已打开，能指出每一块是什么、现在是什么状态"
+    } },
+    { id: "C2", title: "用规则挡住直接推送和无人审查的合并", goal: "给 main 配好 PR 与审批规则，并亲眼看到它生效", points: [
+      { id: "P4", q: "分支规则在设置的哪里配，作用于哪些分支？" },
+      { id: "P5", q: "「合并前必须开 PR」怎样挡住直接推送 main？" },
+      { id: "P6", q: "「至少 1 人批准」要求什么？为什么作者本来就不能批准自己的 PR？" },
+      { id: "P7", q: "「有新提交时作废旧的批准」解决什么问题？" },
+      { id: "P8", q: "规则对谁生效？管理员和绕过名单意味着什么？" },
+      { id: "P9", q: "推送被拒时，怎样分清是规则挡的，还是没有权限？" }
+    ], practice: {
+      do: "给试验仓库的 main 加规则：必须先开 PR、至少 1 人批准、有新提交时作废旧的批准。用一次直接推送确认被拒；请第二个有写权限的账号批准 PR，确认可以合并；再推一个新提交，确认旧的批准作废、又要重新批准。",
+      done: "直接推送被拒的输出；PR 从「需要批准」到可以合并，又因新提交回到「需要批准」"
+    } },
+    { id: "C3", title: "让自动检查成为合并的关卡", goal: "加一个必需检查，看懂它为什么挡住合并、怎样放行", points: [
+      { id: "P10", q: "一次检查由 workflow、job、step 怎样组成？失败原因在哪一层看？" },
+      { id: "P11", q: "普通检查和必需检查差在哪？普通检查失败时还能合并吗？" },
+      { id: "P12", q: "把检查设为必需时，选的名字为什么要和 job 对上？" },
+      { id: "P13", q: "检查全绿，说明测到了什么、没测到什么？（例如 || true、continue-on-error）" }
+    ], practice: {
+      do: "让 AI 写一个最小的 GitHub Actions 检查，设成必需检查，再推一个会失败的提交。新提交会让旧的批准作废，所以先请第二个账号重新批准，这时挡住合并的就只剩检查。从日志找出原因，修好后再推一次、再批准一次，看合并按钮怎样变化。",
+      done: "同一个 PR 上一次红、一次绿的检查；批准已满足时，红的检查挡住合并，转绿后合并按钮变为可用"
+    } },
+    { id: "C4", title: "判断一套门禁有没有效", goal: "拿到一套配置，能说出它挡得住什么、挡不住什么，以及怎么核对", points: [
+      { id: "P14", q: "怎样逐项判断一套配置挡不挡得住直接推送、无人审查的合并和失败的检查？" },
+      { id: "P15", q: "怎样认出一套本来就没问题的配置，而不是为了找错而找错？" },
+      { id: "P16", q: "没把握时，选什么最小的推送或 PR 去核对？" },
+      { id: "P17", q: "怎样区分「已经核对过」「看起来对」和「信息不足」？" }
+    ], practice: {
+      do: "让 AI 给三套门禁配置说明（可能都没问题，可能有口子，也可能信息不足），逐套判断，再挑一套在试验仓库实测。",
+      done: "三套配置各有结论和理由；实测结果和判断一致"
+    } }
+  ]
+};
+/* MAP-END */
+
+const STORE_KEY = "learning-map:" + MAP.id;
+const chapters = MAP.chapters || [];
+/* 编号按位置生成（如 2.3），进度按 id 存；缺 id 时退回编号 */
+const points = chapters.flatMap((c, ci) => (c.points || []).map((p, pi) => {
+  const num = (ci + 1) + "." + (pi + 1);
+  return { key: p.id || "#" + num, q: p.q, num, ci };
+}));
+const chPoints = ci => points.filter(p => p.ci === ci);
+
+function mapProblems() {
+  const out = [];
+  const dups = list => [...new Set(list.filter((x, i) => list.indexOf(x) !== i))];
+  const ch = dups(chapters.map(c => c.id).filter(Boolean));
+  const pt = dups(chapters.flatMap(c => (c.points || []).map(p => p.id)).filter(Boolean));
+  const noId = points.filter(p => p.key.startsWith("#")).map(p => p.num);
+  if (!chapters.length) out.push("这张图还没有章，检查 MAP.chapters。");
+  if (ch.length) out.push("章的 id 重复：" + ch.join("、"));
+  if (pt.length) out.push("知识点 id 重复：" + pt.join("、") + "。重复的知识点会共用一个勾。");
+  if (noId.length) out.push("这些知识点没有 id，进度按编号存，调整顺序后会对不上：" + noId.join("、"));
+  return out;
+}
+
+function blankState() { return { mapId: MAP.id, learned: {}, updatedAt: null }; }
+/* 是这张地图的进度：mapId 对得上，learned 是 { 知识点 id: true } */
+function isProgress(s) {
+  return !!s && typeof s === "object" && s.mapId === MAP.id &&
+    !!s.learned && typeof s.learned === "object" && !Array.isArray(s.learned);
+}
+function normalize(s) {
+  const learned = {};
+  for (const k of Object.keys(s.learned)) if (s.learned[k] === true) learned[k] = true;
+  return { mapId: MAP.id, learned, updatedAt: s.updatedAt || null };
+}
+function loadState() {
+  let stored = null;
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) stored = JSON.parse(raw);
+  } catch (e) { stored = null; }
+  const embedded = window.__LEARNING_MAP_STATE__;
+  const candidates = [stored, embedded].filter(isProgress);
+  if (!candidates.length) return blankState();
+  candidates.sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
+  return normalize(candidates[0]);
+}
+let state = loadState();
+
+function persist() {
+  state.updatedAt = new Date().toISOString();
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); return true; } catch (e) { return false; }
+}
+/* 浏览器存不进时，勾选只留在当前页面；连续失败只提示一次 */
+let saveWarned = false;
+function commit(rerender, message) {
+  const saved = persist();
+  if (rerender) rerender();
+  refresh();
+  if (saved) { saveWarned = false; if (message) toast(message); return; }
+  if (message || !saveWarned) toast((message ? message + "，但" : "") + "没能存进浏览器，关掉页面前用「工具」导出", 6000);
+  saveWarned = true;
+}
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[m]));
+}
+function isLearned(p) { return !!state.learned[p.key]; }
+function chapterStatus(ci) {
+  const ps = chPoints(ci), n = ps.filter(isLearned).length;
+  return { n, total: ps.length, st: ps.length && n === ps.length ? "done" : n ? "doing" : "todo" };
+}
+function statusText(s) { return s.n ? "已学 " + s.n + " / " + s.total : s.total ? "未开始" : "没有知识点"; }
+
+function renderHeader() {
+  document.title = MAP.title + " · 学习地图";
+  document.getElementById("title").textContent = MAP.title;
+  const use = document.getElementById("use");
+  use.textContent = MAP.use ? "用在：" + MAP.use : "";
+  use.hidden = !MAP.use;
+  const ov = MAP.overview || [];
+  document.getElementById("overview").innerHTML = ov.map(x => "<li>" + esc(x) + "</li>").join("");
+  document.getElementById("overviewBox").hidden = !ov.length;
+  document.getElementById("mapMeta").textContent = " 地图 v" + (MAP.version || "") + " · " + (MAP.date || "");
+  const problems = mapProblems();
+  const box = document.getElementById("problems");
+  box.innerHTML = problems.map(x => "<div>" + esc(x) + "</div>").join("");
+  box.hidden = !problems.length;
+}
+
+function chapterHtml(c, ci) {
+  const ps = chPoints(ci);
+  const pr = c.practice || {};
+  return '<details class="chapter" id="ch-' + (ci + 1) + '">' +
+    '<summary><span class="cnum">第 ' + (ci + 1) + ' 章</span><span class="ctitle">' + esc(c.title) + '</span><span class="cprog"></span></summary>' +
+    '<div class="cbody">' +
+      (c.goal ? '<p class="goal"><span class="small">学完能</span>' + esc(c.goal) + "</p>" : "") +
+      (ps.length ? '<ul class="points">' + ps.map(p =>
+        '<li><label><input type="checkbox" data-key="' + esc(p.key) + '"' + (isLearned(p) ? " checked" : "") + '>' +
+        '<span class="sr">学过：</span><span class="pnum">' + p.num + '</span><span class="pq">' + esc(p.q) + "</span></label></li>").join("") + "</ul>" : "") +
+      (pr.do ? '<div class="practice"><b>实操</b>' + esc(pr.do) + (pr.done ? '<div class="small">做完的样子：' + esc(pr.done) + "</div>" : "") + "</div>" : "") +
+    "</div></details>";
+}
+function renderChapters(openFirst) {
+  const open = new Set([...document.querySelectorAll("details.chapter[open]")].map(d => d.id));
+  document.getElementById("chapters").innerHTML = chapters.map(chapterHtml).join("");
+  if (openFirst) {
+    const ci = chapters.findIndex((c, i) => chapterStatus(i).st !== "done");
+    if (ci >= 0) open.add("ch-" + (ci + 1));
+  }
+  for (const id of open) { const d = document.getElementById(id); if (d) d.open = true; }
+}
+
+function refresh() {
+  const n = points.filter(isLearned).length, total = points.length;
+  document.getElementById("progressText").textContent = "已学 " + n + " / " + total + " 个知识点";
+  document.getElementById("bar").style.width = (total ? Math.round(n / total * 100) : 0) + "%";
+  chapters.forEach((c, ci) => {
+    const el = document.getElementById("ch-" + (ci + 1));
+    if (!el) return;
+    const s = chapterStatus(ci);
+    el.classList.remove("todo", "doing", "done");
+    el.classList.add(s.st);
+    el.querySelector(".cprog").textContent = statusText(s);
+  });
+}
+
+document.addEventListener("change", e => {
+  const key = e.target.dataset && e.target.dataset.key;
+  if (!key) return;
+  if (e.target.checked) state.learned[key] = true; else delete state.learned[key];
+  commit(null);
+});
+document.addEventListener("click", e => {
+  const tools = document.getElementById("tools");
+  /* 工具菜单：点了里面的按钮或点到菜单外面，就收起 */
+  if (tools.open && (!tools.contains(e.target) || e.target.closest(".menu button"))) setTimeout(() => { tools.open = false; }, 0);
+});
+window.addEventListener("beforeprint", () => toggleAll(true));
+
+function toggleAll(open) { document.querySelectorAll("details.chapter").forEach(d => { d.open = open; }); }
+
+let toastTimer = null;
+function toast(message, ms) {
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.classList.remove("show"); el.textContent = ""; }, ms || 2500);
+}
+function download(name, content, type) {
+  const blob = new Blob([content], { type: type || "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 500);
+}
+function exportJson() { download(MAP.id + "-progress.json", JSON.stringify(state, null, 2), "application/json"); }
+function exportFilledHtml() {
+  const clone = document.documentElement.cloneNode(true);
+  clone.querySelectorAll("#embedded-state").forEach(n => n.remove());
+  clone.querySelectorAll("#tools").forEach(n => n.removeAttribute("open"));
+  clone.querySelectorAll("#toast").forEach(n => { n.classList.remove("show"); n.textContent = ""; });
+  const script = document.createElement("script");
+  script.id = "embedded-state";
+  script.textContent = "window.__LEARNING_MAP_STATE__ = " + JSON.stringify(state).replace(/</g, "\\u003c") + ";";
+  clone.querySelector("head").appendChild(script);
+  download(MAP.id + "-filled.html", "<!doctype html>\n" + clone.outerHTML, "text/html");
+}
+function importJson(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  /* 不是这张地图的进度，或勾选值不是 true，就不导入，现有勾选保持不动 */
+  reader.onload = () => {
+    let data = null;
+    try { data = JSON.parse(reader.result); } catch (err) { data = null; }
+    const bad = isProgress(data) ? Object.keys(data.learned).filter(k => data.learned[k] !== true) : [];
+    if (bad.length) {
+      toast("进度文件里有认不出的勾选值（" + bad.slice(0, 3).join("、") + (bad.length > 3 ? " 等" : "") + "），没有导入，现有勾选没动", 5000);
+    } else if (isProgress(data)) {
+      state = normalize(data);
+      commit(() => renderChapters(false), "进度已导入");
+    } else if (data && typeof data === "object" && data.mapId && data.mapId !== MAP.id) {
+      toast("这份进度属于另一张地图（" + data.mapId + "），没有导入，现有勾选没动", 5000);
+    } else {
+      toast("这个文件里没有这张地图的进度，没有导入，现有勾选没动", 5000);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+}
+function resetState() {
+  if (!confirm("确定清空这张地图的全部勾选吗？")) return;
+  /* 存一份带时间的空进度，重新打开填写版 HTML 时也不会被内嵌的旧进度盖回去 */
+  state = blankState();
+  commit(() => renderChapters(false));
+}
+
+renderHeader();
+renderChapters(true);
+refresh();
+</script>
+</body>
+</html>
